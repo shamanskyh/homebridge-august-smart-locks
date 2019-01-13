@@ -21,6 +21,7 @@ function AugustPlatform(log, config, api) {
   this.phone = this.config.phone;
   this.password = this.config.password;
   this.securityToken = this.config.securityToken;
+  this.installId = this.config.installId;
   this.longPoll = parseInt(this.config.longPoll, 10) || 180;
   this.shortPoll = parseInt(this.config.shortPoll, 10) || 15;
   this.shortPollDuration = parseInt(this.config.shortPollDuration, 10) || 300;
@@ -294,11 +295,15 @@ AugustPlatform.prototype.login = function (callback) {
   var self = this;
 
   // Log in
-  var authenticate = this.augustApi.authenticate('email:' + this.email, this.password);
+  var authenticate = this.augustApi.authenticate('email:' + this.email, this.password, this.installId);
   authenticate.then(function (result) {
     self.userId = result.body.userId;
     self.platformLog("Logged in with ID " + self.userId);
+    var currentSecurityToken = self.securityToken;
     self.securityToken = result.response.headers['x-august-access-token'];
+    if(currentSecurityToken != self.securityToken) {
+	self.augustApi = new AugustApi(self.securityToken, self.installId);
+    }
     self.postLogin(callback);
 
   }, function (error) {
@@ -739,6 +744,7 @@ AugustPlatform.prototype.configurationRequestHandler = function (context, reques
         newConfig.password = this.password;
         newConfig.securityToken = this.securityToken;
         newConfig.lockids = this.lockids;
+        newConfig.installId = this.installId;
         callback(null, "platform", true, newConfig);
         break;
     }

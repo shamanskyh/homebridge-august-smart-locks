@@ -77,14 +77,14 @@ var AugustApi = function AugustApi(securityToken) {
         return makeRawRequest(option);
     }
 
-    this.authenticate = function authenticate(userid, password) {
+    this.authenticate = function authenticate(userid, password, installId) {
         // https://api-production.august.com/session
         var option = getBaseRequest();
         option.url += 'session';
         option.method = 'POST';
         option.body = {
             identifier: userid,
-            installId: 'E629CCCC-A9E0-40F1-8BB8-43A24830346B',
+            installId: installId,
             password: password
         };
         return makeRawRequest(option);
