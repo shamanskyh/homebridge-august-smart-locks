@@ -327,7 +327,7 @@ AugustPlatform.prototype.getlocks = function (callback) {
       self.platformLog(self.lock["HouseName"] + " " + self.lockname);
       self.lockId = self.lockids[i];
       self.platformLog("LockId " + " " + self.lockId);
-      self.getDevice(callback, self.lockId);
+      self.getDevice(callback, self.lockId, self.lockname, self.lock["HouseName"]);
 
     }
 
@@ -339,30 +339,31 @@ AugustPlatform.prototype.getlocks = function (callback) {
 
 }
 
-AugustPlatform.prototype.getDevice = function (callback, lockId, state) {
+AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, houseName) {
   var self = this;
 
   this.validData = false;
 
   var getLock = self.augustApi.status(lockId);
   getLock.then(function (lock) {
-    var locks = lock //JSON.parse(JSON.stringify(lock));
+    var locks = lock.info //JSON.parse(JSON.stringify(lock));
 
-    self.platformLog(lock);
-    if (!locks.Bridge) {
+    // self.platformLog(lock);
+    if (!locks.BridgeID) {
       self.validData = true;
       return;
 
     }
     var thisDeviceID = locks.LockID.toString();
     var thisSerialNumber = locks.SerialNumber.toString();
-    var thisModel = locks.skuNumber.toString();
-    var thislockName = locks.LockName;
-    var state = locks.LockStatus.status;
+    var thisModel = locks.lockType.toString();
+    var thislockName = lockName;
+    var state = (lock.status == "kAugLockState_Locked") ? "locked" : (lock.status == "kAugLockState_Unlocked") ? "unlocked" : "error";
     var nameFound = true;
     var stateFound = true;
-    var thishome = locks.HouseName;
-    self.batt = locks.battery * 100;
+    var thishome = houseName;
+    // battery no longer provided over api calls
+    self.batt = 100;
 
     var locked = state == "locked";
     var unlocked = state == "unlocked";
@@ -396,14 +397,14 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, state) {
       newAccessory.context.serialNumber = thisSerialNumber;
       newAccessory.context.home = thishome;
       newAccessory.context.model = thisModel;
-      newAccessory.context.batt = self.batt;
+     // newAccessory.context.batt = self.batt;
       newAccessory.context.low = self.low;
 
       newAccessory.context.log = function (msg) { self.log(chalk.cyan("[" + newAccessory.displayName + "]"), msg); };
 
       // Setup HomeKit security systemLoc service
       newAccessory.addService(Service.LockMechanism, thislockName);
-      newAccessory.addService(Service.BatteryService);
+      //newAccessory.addService(Service.BatteryService);
       // Setup HomeKit accessory information
       self.setAccessoryInfo(newAccessory);
       // Setup listeners for different security system events
