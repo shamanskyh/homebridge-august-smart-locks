@@ -354,7 +354,8 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
   getLock.then(function (lock) {
     var locks = lock.info //JSON.parse(JSON.stringify(lock));
 
-    // self.platformLog(lock);
+    self.platformLog(lock);
+    self.platformLog(locks);
 //     if (!locks.BridgeID) {
 //       self.validData = true;
 //       return;
