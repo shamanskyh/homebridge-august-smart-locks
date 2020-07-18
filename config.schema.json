@@ -86,7 +86,7 @@
             "type": "flex",
             "flex-flow": "column",
             "items": [
-              "securityToken"
+              "code"
             ]
           }
         ]
@@ -100,6 +100,13 @@
             "flex-flow": "column",
             "items": [
               "installId"
+            ]
+          }
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "securityToken"
             ]
           }
         ]
