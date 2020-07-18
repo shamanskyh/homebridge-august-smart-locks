@@ -296,12 +296,18 @@ AugustPlatform.prototype.login = function (callback) {
   var self = this;
 
   // Log in
-  var authenticate = this.augustApi.authorize(this.code);
+  var authenticate = this.augustApi.authorize();
   authenticate.then(function (result) {
     self.postLogin(callback);
   }, function (error) {
-    self.platformLog(error);
-    callback(error, null);
+    var authenticate = this.augustApi.authorize(this.code);
+    authenticate.then(function (result) {
+      self.postLogin(callback);
+    }, function (error) {
+      self.platformLog(error);
+      callback(error, null);
+
+    });
 
   });
 
