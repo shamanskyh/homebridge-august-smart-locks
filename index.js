@@ -416,6 +416,7 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
       // Setup listeners for different security system events
       self.setService(newAccessory);
       // Register accessory in HomeKit
+      self.platformLog("adding lock lock to homebridge");
       self.api.registerPlatformAccessories("homebridge-august-smart-locks", "AugustLock2", [newAccessory]);
 
     } else {
