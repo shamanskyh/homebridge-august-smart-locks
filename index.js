@@ -387,7 +387,7 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
     }
 
     // Initialization for opener
-    if (!self.accessories[thisDeviceID]) {
+    //if (!self.accessories[thisDeviceID]) {
       var uuid = UUIDGen.generate(thisDeviceID);
 
       // Setup accessory as GARAGE_lock_OPENER (4) category.
@@ -419,20 +419,20 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
       self.platformLog("adding lock lock to homebridge");
       self.api.registerPlatformAccessories("homebridge-august-smart-locks", "AugustLock2", [newAccessory]);
 
-    } else {
-      // Retrieve accessory from cache
-      var newAccessory = self.accessories[thisDeviceID];
+//     } else {
+//       // Retrieve accessory from cache
+//       var newAccessory = self.accessories[thisDeviceID];
 
-      // Update context
-      newAccessory.context.deviceID = thisDeviceID;
-      newAccessory.context.serialNumber = thisSerialNumber;
-      newAccessory.context.model = thisModel;
-      newAccessory.context.home = thishome;
+//       // Update context
+//       newAccessory.context.deviceID = thisDeviceID;
+//       newAccessory.context.serialNumber = thisSerialNumber;
+//       newAccessory.context.model = thisModel;
+//       newAccessory.context.home = thishome;
 
-      // Accessory is reachable after it's found in the server
-      newAccessory.updateReachability(true);
+//       // Accessory is reachable after it's found in the server
+//       newAccessory.updateReachability(true);
 
-    }
+//     }
 
     if (self.batt) {
       newAccessory.context.low = (self.batt > 20) ? Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
