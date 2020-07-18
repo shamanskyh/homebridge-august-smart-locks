@@ -124,13 +124,13 @@ AugustPlatform.prototype.setService = function (accessory) {
     .on('get', this.getState.bind(this, accessory))
     .on('set', this.setState.bind(this, accessory));
 
-  accessory
-    .getService(Service.BatteryService)
-    .getCharacteristic(Characteristic.BatteryLevel);
+//   accessory
+//     .getService(Service.BatteryService)
+//     .getCharacteristic(Characteristic.BatteryLevel);
 
-  accessory
-    .getService(Service.BatteryService)
-    .getCharacteristic(Characteristic.StatusLowBattery);
+//   accessory
+//     .getService(Service.BatteryService)
+//     .getCharacteristic(Characteristic.StatusLowBattery);
 
   accessory.on('identify', this.identify.bind(this, accessory));
 
