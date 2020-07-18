@@ -101,7 +101,7 @@
             "items": [
               "installId"
             ]
-          }
+          },
           {
             "type": "flex",
             "flex-flow": "column",
