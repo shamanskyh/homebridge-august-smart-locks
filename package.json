@@ -1,20 +1,20 @@
 {
-  "name": "homebridge-augustlock",
+  "name": "homebridge-august-smart-locks",
   "version": "0.3.0",
   "description": "August Lock plugin for HomeBridge: https://github.com/nfarina/homebridge",
   "repository": {
     "type": "git",
-    "url": "git://github.com/llluis/homebridge-augustlock.git"
+    "url": "git://github.com/blaineam/homebridge-august-smart-locks.git"
   },
   "keywords": [
     "homebridge-plugin"
   ],
-  "author": "Luis Andrade",
-  "license": "ISC",
+  "author": "Blaine Miller",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/llluis/homebridge-augustlock/issues"
+    "url": "https://github.com/blaineam/homebridge-august-smart-locks/issues"
   },
-  "homepage": "https://github.com/llluis/homebridge-augustlock/wiki",
+  "homepage": "https://github.com/blaineam/homebridge-august-smart-locks/wiki",
   "engines": {
     "node": ">=0.4.0",
     "homebridge": ">=0.4.9"
