@@ -1,0 +1,103 @@
+{
+    "pluginAlias": "AugustLock2",
+    "pluginType": "platform",
+    "singular": true,
+    "headerDisplay": "August Smart Locks",
+    "footerDisplay": "This plugin is being Tested",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": "AugustLock2",
+          "required": true
+        },
+        "email": {
+          "title": "Email",
+          "type": "string",
+          "required": true
+        },
+        "phone": {
+          "title": "Phone",
+          "type": "string",
+          "required": false
+        },
+        "password": {
+          "title": "Password",
+          "type": "string",
+          "required": true
+        },
+        "securityToken": {
+          "title": "Security Token",
+          "type": "string",
+          "required": false
+        },
+        "installId": {
+          "title": "Installation ID",
+          "type": "string",
+          "required": yes
+        }
+      }
+    },
+    "layout": [
+     "name",
+      {
+        "type": "help",
+        "helpvalue": "<em class='primary-text'>Enter you August app login credentials and enter the security code they text you. enter a random string for the installation id. <a target='_blank' href=''></a></em>:"
+      },
+      {
+        "type": "flex",
+        "flex-flow": "row wrap",
+        "items": [
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "email"
+            ]
+          },
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "phone"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "flex",
+        "flex-flow": "row wrap",
+        "items": [
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "password"
+            ]
+          },
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "securityToken"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "flex",
+        "flex-flow": "row wrap",
+        "items": [
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "installId"
+            ]
+          }
+        ]
+      }
+    ]
+  }
