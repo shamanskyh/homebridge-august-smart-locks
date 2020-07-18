@@ -28,6 +28,11 @@
           "type": "string",
           "required": true
         },
+        "code": {
+          "title": "2FA Code",
+          "type": "string",
+          "required": false
+        },
         "securityToken": {
           "title": "Security Token",
           "type": "string",
@@ -44,7 +49,7 @@
      "name",
       {
         "type": "help",
-        "helpvalue": "<em class='primary-text'>Enter you August app login credentials and enter the security code they text you. enter a random string for the installation id. <a target='_blank' href=''></a></em>:"
+        "helpvalue": "<em class='primary-text'>Enter you August app login credentials and enter the 2FA code they send you. enter a random string for the installation id. Security Token is optional if you know how to source your own August API Key<a target='_blank' href=''></a></em>:"
       },
       {
         "type": "flex",
