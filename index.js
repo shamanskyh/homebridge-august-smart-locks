@@ -354,15 +354,15 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
   getLock.then(function (lock) {
     var locks = lock.info //JSON.parse(JSON.stringify(lock));
 
-    self.platformLog(lock);
-    self.platformLog(locks);
-//     if (!locks.BridgeID) {
-//       self.validData = true;
-//       return;
+//     self.platformLog(lock);
+//     self.platformLog(locks);
+    if (!locks.bridgeID) {
+      self.validData = true;
+      return;
 
-//     }
-    var thisDeviceID = locks.LockID.toString();
-    var thisSerialNumber = locks.SerialNumber.toString();
+    }
+    var thisDeviceID = locks.lockID.toString();
+    var thisSerialNumber = locks.serialNumber.toString();
     var thisModel = locks.lockType.toString();
     var thislockName = lockName;
     var state = (lock.status == "kAugLockState_Locked") ? "locked" : (lock.status == "kAugLockState_Unlocked") ? "unlocked" : "error";
