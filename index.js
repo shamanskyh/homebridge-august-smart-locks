@@ -20,7 +20,8 @@ function AugustPlatform(log, config, api) {
   this.email = this.config.email;
   this.phone = this.config.phone;
   this.password = this.config.password;
-  this.securityToken = this.config.securityToken;
+  this.securityToken = this.config.securityToken;;
+  this.code = this.config.code;
   this.installId = this.config.installId;
   this.longPoll = parseInt(this.config.longPoll, 10) || 180;
   this.shortPoll = parseInt(this.config.shortPoll, 10) || 15;
@@ -31,7 +32,7 @@ function AugustPlatform(log, config, api) {
   this.count = this.maxCount;
   this.validData = false;
 
-  this.augustApi = new AugustApi(this.securityToken);
+  this.augustApi = new AugustApi(this.config);
 
   this.manufacturer = "AUGUST";
   this.accessories = {};
@@ -295,17 +296,9 @@ AugustPlatform.prototype.login = function (callback) {
   var self = this;
 
   // Log in
-  var authenticate = this.augustApi.authenticate('email:' + this.email, this.password, this.installId);
+  var authenticate = this.augustApi.authorize(this.code);
   authenticate.then(function (result) {
-    self.userId = result.body.userId;
-    self.platformLog("Logged in with ID " + self.userId);
-    var currentSecurityToken = self.securityToken;
-    self.securityToken = result.response.headers['x-august-access-token'];
-    if(currentSecurityToken != self.securityToken) {
-	self.augustApi = new AugustApi(self.securityToken, self.installId);
-    }
     self.postLogin(callback);
-
   }, function (error) {
     self.platformLog(error);
     callback(error, null);
@@ -314,12 +307,9 @@ AugustPlatform.prototype.login = function (callback) {
 
 }
 
-AugustPlatform.prototype.postLogin = function (accessory, paired, getlocks, callback) {
+AugustPlatform.prototype.postLogin = function (callback) {
   var self = this;
-  if (self.securityToken) {
-    self.getlocks(accessory);
-
-  }
+    self.getlocks(callback);
 
 }
 
@@ -328,14 +318,13 @@ AugustPlatform.prototype.getlocks = function (callback) {
 
   // get locks
   this.platformLog("getting locks ...");
-  var getLocks = this.augustApi.getLocks();
-  getLocks.then(function (result) {
-    var json = JSON.parse(JSON.stringify(result));
+  var getLocks = this.augustApi.locks();
+  getLocks.then(function (json) {
     self.lockids = Object.keys(json);
     for (var i = 0; i < self.lockids.length; i++) {
       self.lock = json[self.lockids[i]];
-      self.lockname = self.lock["HouseName"];
-      self.platformLog("House Name " + " " + self.lockname);
+      self.lockname = self.lock["LockName"];
+      self.platformLog(self.lock["HouseName"] + " " + self.lockname);
       self.lockId = self.lockids[i];
       self.platformLog("LockId " + " " + self.lockId);
       self.getDevice(callback, self.lockId);
@@ -355,10 +344,11 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, state) {
 
   this.validData = false;
 
-  var getLock = self.augustApi.getLock(lockId);
+  var getLock = self.augustApi.status(lockId);
   getLock.then(function (lock) {
-    var locks = JSON.parse(JSON.stringify(lock));
+    var locks = lock //JSON.parse(JSON.stringify(lock));
 
+    self.platformLog(lock);
     if (!locks.Bridge) {
       self.validData = true;
       return;
@@ -496,9 +486,9 @@ AugustPlatform.prototype.setState = function (accessory, state, callback) {
   var self = this;
   var lockCtx = accessory.context;
   var status = this.lockState[state];
-  var augustState = (state == Characteristic.LockTargetState.SECURED) ? "lock" : "unlock";
+  var augustState = (state == Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockCtx.deviceID) : this.augustApi.unlock(lockCtx.deviceID);
 
-  var remoteOperate = this.augustApi.remoteOperate(lockCtx.deviceID, augustState);
+  var remoteOperate = this.augustApi.lock(lockCtx.deviceID);
   remoteOperate.then(function (result) {
     lockCtx.log("State was successfully set to " + status);
 
@@ -518,235 +508,4 @@ AugustPlatform.prototype.setState = function (accessory, state, callback) {
 
   });
 
-}
-
-AugustPlatform.prototype.sendcode = function (callback) {
-  var self = this;
-
-  this.platformLog("sending code to " + this.phone);
-  var sendCodeToPhone = this.augustApi.sendCodeToPhone('+' + this.phone);
-  sendCodeToPhone.then(function (result) {
-    self.platformLog("sent code to " + self.phone);
-
-  }, function (error) {
-    self.platformLog(error);
-    callback(error, null);
-
-  });
-
-}
-AugustPlatform.prototype.validatecode = function (callback) {
-  var self = this;
-
-  this.platformLog("validate code " + this.code);
-  var validatePhone = this.augustApi.validatePhone('+' + this.phone, this.code);
-  validatePhone.then(function (result) {
-    self.securityToken = result.response.headers['x-august-access-token'];
-
-  }, function (error) {
-    self.platformLog(error);
-    callback(error, null);
-
-  });
-
-}
-AugustPlatform.prototype.sendcodeemail = function (callback) {
-  var self = this;
-
-  this.platformLog("sending code to " + this.email);
-  var sendCodeToEmail = this.augustApi.sendCodeToEmail(this.email);
-  sendCodeToEmail.then(function (result) {
-    self.platformLog("sent code to " + self.email);
-
-  }, function (error) {
-    self.platformLog(error);
-    callback(error, null);
-
-  });
-
-}
-AugustPlatform.prototype.validatecodeemail = function (callback) {
-  var self = this;
-
-  this.platformLog("validate code " + this.code);
-  var validateEmail = this.augustApi.validateEmail(this.email, this.code);
-  validateEmail.then(function (result) {
-    self.securityToken = result.response.headers['x-august-access-token'];
-
-  }, function (error) {
-    self.platformLog(error);
-    callback(error, null);
-
-  });
-
-}
-
-// Method to handle plugin configuration in Hesperus app
-AugustPlatform.prototype.configurationRequestHandler = function (context, request, callback) {
-  var self = this;
-
-  if (request && request.type === "Terminate") {
-    return;
-  }
-
-  // Instruction
-  if (!context.step) {
-    var instructionResp = {
-      "type": "Interface",
-      "interface": "instruction",
-      "title": "Before You Start...",
-      "detail": "Please make sure homebridge is running.",
-      "showNextButton": true
-    }
-
-    context.step = 1;
-    callback(instructionResp);
-
-  } else {
-    switch (context.step) {
-      case 1:
-        var respDict = {
-          "type": "Interface",
-          "interface": "input",
-          "title": "Configuration",
-          "items": [{
-            "id": "email",
-            "title": "Email Address (Required)",
-            "placeholder": this.email ? "Leave blank if unchanged" : "email"
-          }, {
-            "id": "phone",
-            "title": "Phone (Required)",
-            "placeholder": this.phone ? "Leave blank if unchanged" : "phone - Example (1xxxxxxxxxx)"
-          }, {
-            "id": "password",
-            "title": "Password (Required)",
-            "placeholder": this.password ? "Leave blank if unchanged" : "password",
-            "secure": true
-          }]
-        }
-        context.step = 2;
-        callback(respDict);
-        break;
-
-      case 2:
-        var userInputs = request.response.inputs;
-
-        // Setup info for adding or updating accessory
-        this.email = userInputs.email || this.email;
-        this.phone = userInputs.phone || this.phone;
-        this.password = userInputs.password || this.password;
-
-        if (this.email && this.phone && this.password) {
-          this.sendcode(callback);
-
-          var respDict = {
-            "type": "Interface",
-            "interface": "input",
-            "title": "code",
-            "items": [{
-              "id": "code",
-              "title": "August Verification Code",
-              "placeholder": this.code ? "Verification Code" : "code",
-              "showNextButton": true
-            }]
-          };
-          context.step = 3;
-
-        } else {
-          // Error if required info is missing
-          var respDict = {
-            "type": "Interface",
-            "interface": "instruction",
-            "title": "Error",
-            "detail": "Some required information is missing.",
-            "showNextButton": true
-          };
-          context.step = 1;
-
-        }
-        callback(respDict);
-        break;
-
-      case 3:
-        var userInputs = request.response.inputs;
-
-        // Setup info for adding or updating accessory
-        this.code = userInputs.code || this.code;
-        this.validatecode(callback);
-
-        if (this.email && this.phone && this.password) {
-          this.sendcodeemail(callback);
-
-          var respDict = {
-            "type": "Interface",
-            "interface": "input",
-            "title": "code",
-            "items": [{
-              "id": "code",
-              "title": "August Verification Code",
-              "placeholder": this.code ? "Verification Code" : "code",
-              "showNextButton": true
-            }]
-          };
-          context.step = 4;
-
-        } else {
-          // Error if required info is missing
-          var respDict = {
-            "type": "Interface",
-            "interface": "instruction",
-            "title": "Error",
-            "detail": "Some required information is missing.",
-            "showNextButton": true
-          };
-          context.step = 1;
-        }
-        callback(respDict);
-        break;
-
-      case 4:
-        var userInputs = request.response.inputs;
-
-        // Setup info for adding or updating accessory
-        this.code = userInputs.code || this.code;
-        this.validatecodeemail(callback);
-
-        var respDict = {
-          "type": "Interface",
-          "interface": "instruction",
-          "title": "Success",
-          "detail": "The configuration is now updated.",
-          "showNextButton": true
-        };
-        context.step = 5;
-        callback(respDict);
-        break;
-
-      case 5:
-        // Add or update accessory in HomeKit
-        this.addAccessory();
-
-        // Reset polling
-        this.maxCount = this.shortPollDuration / this.shortPoll;
-        this.count = this.maxCount;
-
-        if (this.tout) {
-          clearTimeout(this.tout);
-          this.periodicUpdate();
-
-        }
-
-        // Update config.json accordingly
-        delete context.step;
-        var newConfig = this.config;
-        newConfig.email = this.email;
-        newConfig.phone = this.phone;
-        newConfig.password = this.password;
-        newConfig.securityToken = this.securityToken;
-        newConfig.lockids = this.lockids;
-        newConfig.installId = this.installId;
-        callback(null, "platform", true, newConfig);
-        break;
-    }
-  }
 }
