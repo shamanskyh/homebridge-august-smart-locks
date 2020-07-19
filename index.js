@@ -31,7 +31,7 @@ function AugustPlatform(log, config, api) {
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
   this.validData = false;
-  this.hideLocks = this.config.hideLocks.split(",");
+  this.hideLocks = (this.config.hideLocks) ? this.config.hideLocks.split(",") : [];
 
   this.augustApi = new AugustApi(this.config);
 
