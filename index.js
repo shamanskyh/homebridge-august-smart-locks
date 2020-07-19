@@ -201,7 +201,7 @@ AugustPlatform.prototype.periodicUpdate = function () {
     var refresh = this.longPoll;
 
   }
-  if (self.tout) {
+  if (self.tout !== null) {
     return;
   }
   // Setup periodic update with polling interval
