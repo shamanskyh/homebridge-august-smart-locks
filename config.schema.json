@@ -1,161 +1,154 @@
 {
-    "pluginAlias": "AugustLock2",
-    "pluginType": "platform",
-    "singular": true,
-    "headerDisplay": "August Smart Locks",
-    "footerDisplay": "This plugin is being Tested",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "title": "Name",
-          "type": "string",
-          "default": "AugustLock2",
-          "required": true
-        },
-        "email": {
-          "title": "Email",
-          "type": "string",
-          "required": true
-        },
-        "phone": {
-          "title": "Phone",
-          "type": "string",
-          "required": false
-        },
-        "password": {
-          "title": "Password",
-          "type": "string",
-          "required": true
-        },
-        "code": {
-          "title": "2FA Code",
-          "type": "string",
-          "required": false
-        },
-        "securityToken": {
-          "title": "Security Token",
-          "type": "string",
-          "required": false
-        },
-        "installId": {
-          "title": "Installation ID",
-          "type": "string",
-          "required": true
-        },
-        "hideLocks": {
-          "title": "Lock ID's to Hide separated by ','",
-          "type": "string",
-          "required": false
-        },
-        "longPoll": {
-          "title": "Long Poll Duration (Seconds)",
-          "type": "number",
-          "required": false
-        },
-        "shortPoll": {
-          "title": "Short Poll Duration (Seconds)",
-          "type": "number",
-          "required": false
-        }
-      }
-    },
-    "layout": [
-     "name",
-      {
-        "type": "help",
-        "helpvalue": "<em class='primary-text'>Enter you August app login credentials and enter the 2FA code they send you. enter a random string for the installation id. Security Token is optional if you know how to source your own August API Key<a target='_blank' href=''></a></em>:"
-      },
-      {
-        "type": "flex",
-        "flex-flow": "row wrap",
-        "items": [
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "email"
-            ]
-          },
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "phone"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "flex",
-        "flex-flow": "row wrap",
-        "items": [
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "password"
-            ]
-          },
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "code"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "flex",
-        "flex-flow": "row wrap",
-        "items": [
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "installId"
-            ]
-          },
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "securityToken"
-            ]
-          },
-      {
-        "type": "flex",
-        "flex-flow": "row wrap",
-        "items": [
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "longPoll"
-            ]
-          },
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "shortPoll"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "flex",
-        "flex-flow": "row wrap",
-        "items": [
-          {
-            "type": "flex",
-            "flex-flow": "column",
-            "items": [
-              "hideLocks"
-            ]
-          }
-        ]
-      }
-    ]
-  }
+	"pluginAlias": "AugustLock2",
+	"pluginType": "platform",
+	"singular": true,
+	"headerDisplay": "August Smart Locks",
+	"footerDisplay": "This plugin is being Tested",
+	"schema": {
+		"type": "object",
+		"properties": {
+			"name": {
+				"title": "Name",
+				"type": "string",
+				"default": "AugustLock2",
+				"required": true
+			},
+			"email": {
+				"title": "Email",
+				"type": "string",
+				"required": true
+			},
+			"phone": {
+				"title": "Phone",
+				"type": "string",
+				"required": false
+			},
+			"password": {
+				"title": "Password",
+				"type": "string",
+				"required": true
+			},
+			"code": {
+				"title": "2FA Code",
+				"type": "string",
+				"required": false
+			},
+			"securityToken": {
+				"title": "Security Token",
+				"type": "string",
+				"required": false
+			},
+			"installId": {
+				"title": "Installation ID",
+				"type": "string",
+				"required": true
+			},
+			"hideLocks": {
+				"title": "Lock ID's to Hide separated by ','",
+				"type": "string",
+				"required": false
+			},
+			"longPoll": {
+				"title": "Long Poll Duration (Seconds)",
+				"type": "number",
+				"required": false
+			},
+			"shortPoll": {
+				"title": "Short Poll Duration (Seconds)",
+				"type": "number",
+				"required": false
+			}
+		}
+	},
+	"layout": [{
+			"type": "help",
+			"helpvalue": "<em class='primary-text'>Enter you August app login credentials and enter the 2FA code they send you. enter a random string for the installation id. Security Token is optional if you know how to source your own August API Key<a target='_blank' href=''></a></em>:"
+		},
+		{
+			"type": "flex",
+			"flex-flow": "row wrap",
+			"items": [{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"email"
+					]
+				},
+				{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"phone"
+					]
+				}
+			]
+		},
+		{
+			"type": "flex",
+			"flex-flow": "row wrap",
+			"items": [{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"password"
+					]
+				},
+				{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"code"
+					]
+				}
+			]
+		},
+		{
+			"type": "flex",
+			"flex-flow": "row wrap",
+			"items": [{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"installId"
+					]
+				},
+				{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"securityToken"
+					]
+				}
+			]
+		}, {
+			"type": "flex",
+			"flex-flow": "row wrap",
+			"items": [{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"longPoll"
+					]
+				},
+				{
+					"type": "flex",
+					"flex-flow": "column",
+					"items": [
+						"shortPoll"
+					]
+				}
+			]
+		},
+		{
+			"type": "flex",
+			"flex-flow": "row wrap",
+			"items": [{
+				"type": "flex",
+				"flex-flow": "column",
+				"items": [
+					"hideLocks"
+				]
+			}]
+		}
+	]
+}
