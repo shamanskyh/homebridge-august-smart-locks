@@ -43,6 +43,11 @@
           "type": "string",
           "required": true
         },
+        "hideLocks": {
+          "title": "Lock ID's to Hide separated by ','",
+          "type": "string",
+          "required": false
+        },
         "longPoll": {
           "title": "Long Poll Duration (Seconds)",
           "type": "number",
@@ -135,6 +140,17 @@
             "flex-flow": "column",
             "items": [
               "shortPoll"
+            ]
+          },
+      {
+        "type": "flex",
+        "flex-flow": "row wrap",
+        "items": [
+          {
+            "type": "flex",
+            "flex-flow": "column",
+            "items": [
+              "hideLocks"
             ]
           }
         ]
