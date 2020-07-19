@@ -31,6 +31,7 @@ function AugustPlatform(log, config, api) {
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
   this.validData = false;
+  this.hideLocks = this.config.hideLocks.split(",");
 
   this.augustApi = new AugustApi(this.config);
 
@@ -277,10 +278,10 @@ AugustPlatform.prototype.updateState = function (callback) {
 
   } else {
     // Re-login if current data is not valid
-//     this.login(function (error) {
-//       callback(error, false);
+    this.login(function (error) {
+      callback(error, false);
 
-//     });
+    });
 
   }
 
@@ -335,8 +336,10 @@ AugustPlatform.prototype.getlocks = function (callback) {
       self.platformLog(self.lock["HouseName"] + " " + self.lockname);
       self.lockId = self.lockids[i];
       self.platformLog("LockId " + " " + self.lockId);
-      self.getDevice(callback, self.lockId, self.lockname, self.lock["HouseName"]);
-
+      
+      if(!self.hideLocks.includes(self.lockId)){
+        self.getDevice(callback, self.lockId, self.lockname, self.lock["HouseName"]);
+      }
     }
 
   }, function (error) {
@@ -349,7 +352,7 @@ AugustPlatform.prototype.getlocks = function (callback) {
 
 AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, houseName) {
   var self = this;
-
+  
   this.validData = false;
 
   var getLock = self.augustApi.status(lockId);
