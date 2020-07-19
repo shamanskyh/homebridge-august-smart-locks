@@ -201,10 +201,12 @@ AugustPlatform.prototype.periodicUpdate = function () {
     var refresh = this.longPoll;
 
   }
-
+  if (self.tout) {
+    return;
+  }
   // Setup periodic update with polling interval
   this.tout = setTimeout(function () {
-    self.tout = null
+    self.tout = null;
     self.updateState(function (error, skipped) {
       if (!error) {
         if (!skipped) {
