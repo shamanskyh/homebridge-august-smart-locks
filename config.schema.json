@@ -141,7 +141,9 @@
             "items": [
               "shortPoll"
             ]
-          },
+          }
+        ]
+      },
       {
         "type": "flex",
         "flex-flow": "row wrap",
