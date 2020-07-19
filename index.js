@@ -277,10 +277,10 @@ AugustPlatform.prototype.updateState = function (callback) {
 
   } else {
     // Re-login if current data is not valid
-    this.login(function (error) {
-      callback(error, false);
+//     this.login(function (error) {
+//       callback(error, false);
 
-    });
+//     });
 
   }
 
