@@ -271,7 +271,7 @@ AugustPlatform.prototype.updateState = function (callback) {
 
   if (this.validData) {
     // Refresh data directly from sever if current data is valid
-    this.getlocks(function (error) {
+    this.getlocks(false, function (error) {
       callback(error, false);
 
     });
@@ -318,24 +318,30 @@ AugustPlatform.prototype.login = function (callback) {
 
 AugustPlatform.prototype.postLogin = function (callback) {
   var self = this;
-    self.getlocks(callback);
+    self.getlocks(true, callback);
 
 }
 
-AugustPlatform.prototype.getlocks = function (callback) {
+AugustPlatform.prototype.getlocks = function (start, callback) {
   var self = this;
 
   // get locks
-  this.platformLog("getting locks ...");
+  if(start) {
+    this.platformLog("getting locks ...");
+  };
   var getLocks = this.augustApi.locks();
   getLocks.then(function (json) {
     self.lockids = Object.keys(json);
     for (var i = 0; i < self.lockids.length; i++) {
       self.lock = json[self.lockids[i]];
       self.lockname = self.lock["LockName"];
-      self.platformLog(self.lock["HouseName"] + " " + self.lockname);
+      if(start) {
+        self.platformLog(self.lock["HouseName"] + " " + self.lockname);
+      }
       self.lockId = self.lockids[i];
-      self.platformLog("LockId " + " " + self.lockId);
+      if(start) {
+        self.platformLog("LockId " + " " + self.lockId);
+      }
       
       if(!self.hideLocks.includes(self.lockId)){
         self.getDevice(callback, self.lockId, self.lockname, self.lock["HouseName"]);
