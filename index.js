@@ -260,7 +260,7 @@ AugustPlatform.prototype.updatelockStates = function (accessory) {
 // Method to retrieve lock state from the server
 AugustPlatform.prototype.updateState = function (callback) {
   if (this.updating) {
-    this.log("updateState called while previous still active");
+    //this.log("updateState called while previous still active");
     callback(null, true);
     return;
 
