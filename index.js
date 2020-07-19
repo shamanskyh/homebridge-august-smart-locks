@@ -474,11 +474,11 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
     // Did we have valid data?
     if (self.validData) {
       // Set short polling interval when state changes
-      if (self.tout && self.count == 0) {
+      //if (self.tout && self.count == 0) {
         clearTimeout(self.tout);
         self.periodicUpdate();
 
-      }
+      //}
       callback();
 
     } else {
@@ -508,11 +508,11 @@ AugustPlatform.prototype.setState = function (accessory, state, callback) {
 
     // Set short polling interval
     self.count = 0;
-    if (self.tout) {
+    //if (self.tout) {
       clearTimeout(self.tout);
       self.periodicUpdate();
 
-    }
+    //}
     callback(null, state);
 
   }, function (error) {
