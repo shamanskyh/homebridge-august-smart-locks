@@ -8,7 +8,7 @@ module.exports = function (homebridge) {
   Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
 
-  homebridge.registerPlatform("AugustLock2", AugustPlatform);
+  homebridge.registerPlatform("homebridge-august-smart-locks", "AugustLock2", AugustPlatform);
 
 }
 
