@@ -1,7 +1,6 @@
 {
-	"pluginAlias": "AugustLock2",
+	"pluginAlias": "AugustLocks",
 	"pluginType": "platform",
-	"singular": true,
 	"headerDisplay": "August Smart Locks",
 	"footerDisplay": "This plugin is being Tested",
 	"schema": {
@@ -10,7 +9,7 @@
 			"name": {
 				"title": "Name",
 				"type": "string",
-				"default": "AugustLock2",
+				"default": "AugustLocks",
 				"required": true
 			},
 			"email": {
