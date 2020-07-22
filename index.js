@@ -1,5 +1,4 @@
 const AugustApi = require('./api.js');
-var chalk = require("chalk");
 
 var Accessory, Service, Characteristic, UUIDGen;
 
@@ -15,7 +14,7 @@ module.exports = function (homebridge) {
 
 function AugustPlatform(log, config, api) {
   this.log = log;
-  this.platformLog = function (msg) { log(chalk.cyan("[August]"), msg); };
+  this.platformLog = function (msg) { log("[August]", msg); };
   this.config = config || { "platform": "AugustLock2" };
   this.email = this.config.email;
   this.phone = this.config.phone;
@@ -106,7 +105,7 @@ AugustPlatform.prototype.configureAccessory = function (accessory) {
   var self = this;
   var accessoryID = accessory.context.deviceID;
 
-  accessory.context.log = function (msg) { self.log(chalk.cyan("[" + accessory.displayName + "]"), msg); };
+  accessory.context.log = function (msg) { self.log("[" + accessory.displayName + "]", msg); };
   this.setService(accessory);
   this.accessories[accessoryID] = accessory;
 
@@ -418,7 +417,7 @@ AugustPlatform.prototype.getDevice = function (callback, lockId, lockName, house
      // newAccessory.context.batt = self.batt;
       newAccessory.context.low = self.low;
 
-      newAccessory.context.log = function (msg) { self.log(chalk.cyan("[" + newAccessory.displayName + "]"), msg); };
+      newAccessory.context.log = function (msg) { self.log("[" + newAccessory.displayName + "]", msg); };
 
       // Setup HomeKit security systemLoc service
       newAccessory.addService(Service.LockMechanism, thislockName);
