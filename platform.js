@@ -283,10 +283,10 @@ class AugustPlatform {
   
       } else {
         // Re-login if current data is not valid
-        this.login(function (error) {
-          callback(error, false);
+       // this.login(function (error) {
+          callback(new Error("couldn't contact August APi"), false);
   
-        });
+       // });
   
       }
   
@@ -485,11 +485,11 @@ class AugustPlatform {
         // Did we have valid data?
         if (self.validData) {
           // Set short polling interval when state changes
-          //if (self.tout && self.count == 0) {
+          if (self.tout && self.count == 0) {
             clearTimeout(self.tout);
             self.periodicUpdate();
   
-          //}
+          }
           callback();
   
         } else {
@@ -499,7 +499,7 @@ class AugustPlatform {
         }
   
       }, function (error) {
-        self.platformLog(error);
+        //self.platformLog(error);
         callback(error, null);
   
       });
