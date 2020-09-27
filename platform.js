@@ -4,8 +4,13 @@ const AugustApi = function(config) {
     process.env.AUGUST_API_KEY = config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4"; //pulled from android apk july 2020
     process.env.AUGUST_INSTALLID = config.installId;
     process.env.AUGUST_PASSWORD = config.password;
-    process.env.AUGUST_ID_TYPE = 'email';
-    process.env.AUGUST_ID = config.email;
+    if (config.email) {
+      process.env.AUGUST_ID_TYPE = 'email';
+      process.env.AUGUST_ID = config.email;
+    } else if (config.phone) {
+      process.env.AUGUST_ID_TYPE = 'phone';
+      process.env.AUGUST_ID = config.phone;
+    }
     return require('august-connect');
 }
 
@@ -57,7 +62,7 @@ class AugustPlatform {
     // Method to setup accesories from config.json
     didFinishLaunching() {
   
-      if (this.email && this.phone && this.password) {
+      if ((this.email || this.phone) && this.password) {
         // Add or update accessory in HomeKit
         this.addAccessory();
         this.periodicUpdate();
