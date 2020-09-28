@@ -24,8 +24,9 @@ or use the Homebridge Web Interface to setup the Plugin by searching for 'august
 {
     "platforms": [
         {
-            "platform": "AugustLock2",
+            "platform": "AugustLocks",
             "email": "<YOUR-EMAIL-ADDRESS>",
+            "phone": "<YOUR-PHONE-NUMBER>",
             "password": "<YOUR-PASSWORD>",
             "code": "<2FA-CODE>",
             "installId": "<RANDOM-STATIC-STRING>",
@@ -39,6 +40,8 @@ or use the Homebridge Web Interface to setup the Plugin by searching for 'august
 
 **email**: The email address of your August account.
 
+**phone**: The phone number associated with your August account (e.g +123456789). Specify phone or email, not both. 
+
 **password**: The password of your August account.
 
 **code**: The 6 digit 2 factor authentication code August emails you when the plugin authenticates with August's API. When first setting up this you should configure all other required fields, restart homebridge, wait for the email from August, enter the 6 digit code into this configuration and then restart homebridge one last time. Subsequent restarts should remember your authenticated, however you may still receive an email when the homebridge restarts or the plugin encounters an error, you can safely ignore the subsequent emails from August.
@@ -48,8 +51,6 @@ or use the Homebridge Web Interface to setup the Plugin by searching for 'august
 ### Optional Fields:
 
 **hideLocks**: Commas Separeted String of all the Lock ID's you dont want to show in homekit. These are shown in the log of homebridge after the home and name of the lock is printed out on the prior long entry. you can use this to hide august locks in your august account you dont want to be part of the homebridge setup for example I use this on my August locks that are homekit capable.
-
-**phone**: not currently used but may be added later for accounts without an email for authentication
 
 **securityToken**: Augusts API Key, currently pulled from a decompiled apk of the August Android App, August may change this api key as they so wish to. Ese this property to update it if you follow a procedure to obtain the current api key for Augusts API Server.
 
