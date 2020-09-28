@@ -59,8 +59,7 @@ class AugustPlatform {
   
       if (this.email && this.phone && this.password) {
         // Add or update accessory in HomeKit
-        this.addAccessory();
-        this.periodicUpdate();
+        this.addAccessory(this.periodicUpdate.bind(this));
   
       } else {
         this.platformLog("Please setup August login information!")
@@ -70,7 +69,7 @@ class AugustPlatform {
     }
   
     // Method to add or update HomeKit accessories
-    addAccessory() {
+    addAccessory(callback) {
       var self = this;
   
       this.login(function (error) {
@@ -88,8 +87,9 @@ class AugustPlatform {
             }
   
           }
-  
+
         }
+        callback();
   
       });
     }
@@ -197,7 +197,12 @@ class AugustPlatform {
     // Method for state periodic update
     periodicUpdate() {
       var self = this;
-  
+
+      if (self.tout !== null) {
+        this.log.debug("Update already scheduled")
+        return;
+      }
+
       // Determine polling interval
       if (this.count < this.maxCount) {
         this.count++;
@@ -205,11 +210,8 @@ class AugustPlatform {
   
       } else {
         var refresh = this.longPoll;
-  
+        
       }
-    //   if (self.tout !== null) {
-    //     return;
-    //   }
       // Setup periodic update with polling interval
       this.tout = setTimeout(function () {
         self.tout = null;
@@ -222,20 +224,17 @@ class AugustPlatform {
                 self.updatelockStates(accessory);
   
               }
+              self.periodicUpdate();
+
             }
-  
+
           } else {
             // Re-login after short polling interval if error occurs
             self.count = self.maxCount - 1;
-  
-          }
-  
-          // Setup next polling
-          if (!skipped) {
-            self.updating = false;
             self.periodicUpdate();
   
           }
+  
         });
   
       }, refresh * 1000);
@@ -275,8 +274,10 @@ class AugustPlatform {
       this.updating = true;
   
       if (this.validData) {
+        var self = this;
         // Refresh data directly from sever if current data is valid
         this.getlocks(false, function (error) {
+          self.updating = false;
           callback(error, false);
   
         });
@@ -284,7 +285,7 @@ class AugustPlatform {
       } else {
         // Re-login if current data is not valid
        // this.login(function (error) {
-          callback(new Error("couldn't contact August APi"), false);
+          callback(new Error("Couldn't contact August API"), false);
   
        // });
   
@@ -392,7 +393,8 @@ class AugustPlatform {
         var unlocked = state == "unlocked";
   
         var thislockState = (state == "locked") ? "1" : "0";
-  
+        var isStateChanged = false;
+
         if (self.batt < 20) {
           var lowbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
           var newbatt = self.Characteristic.LockCurrentState.SECURED;
@@ -435,7 +437,8 @@ class AugustPlatform {
           // Register accessory in HomeKit
           self.platformLog("adding lock lock to homebridge");
           self.api.registerPlatformAccessories("homebridge-august-smart-locks", "AugustLocks", [newAccessory]);
-  
+          isStateChanged = true;
+
         } else {
           // Retrieve accessory from cache
           var newAccessory = self.accessories[thisDeviceID];
@@ -469,7 +472,7 @@ class AugustPlatform {
   
           // Detect for state changes
           if (newState !== newAccessory.context.currentState) {
-            self.count = 0;
+            isStateChanged = true;
             newAccessory.context.currentState = newState;
   
           }
@@ -485,10 +488,8 @@ class AugustPlatform {
         // Did we have valid data?
         if (self.validData) {
           // Set short polling interval when state changes
-          if (self.tout && self.count == 0) {
-            clearTimeout(self.tout);
-            self.periodicUpdate();
-  
+          if (isStateChanged) {
+            self.count = 0;
           }
           callback();
   
@@ -518,12 +519,13 @@ class AugustPlatform {
         lockCtx.log("State was successfully set to " + status);
   
         // Set short polling interval
-        self.count = 0;
-        //if (self.tout) {
+        if (self.tout) {
           clearTimeout(self.tout);
-          self.periodicUpdate();
+          self.tout = null;
   
-        //}
+        }
+        self.count = 0;
+        self.periodicUpdate();
         callback(null, state);
   
       }, function (error) {
