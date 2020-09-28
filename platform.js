@@ -170,6 +170,26 @@ class AugustPlatform {
   
     }
   
+    // Method to set target lock state
+    setState(accessory, state, callback) {
+      var self = this;
+  
+      // Always re-login for setting the state
+      this.getDevice(function (getlocksError) {
+        if (!getlocksError) {
+          self.setState(accessory, state, function (setStateError) {
+            callback(setStateError);
+          });
+  
+        } else {
+          callback(getlocksError);
+  
+        }
+  
+      }, accessory.context.deviceID);
+  
+    }
+  
     // Method to get target lock state
     getState(accessory, callback) {
       // Get target state directly from cache
