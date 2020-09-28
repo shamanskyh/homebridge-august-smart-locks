@@ -491,9 +491,8 @@ class AugustPlatform {
       var self = this;
       var lockCtx = accessory.context;
       var status = this.lockState[state];
-      var augustState = (state == self.Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockCtx.deviceID) : this.augustApi.unlock(lockCtx.deviceID);
+      var remoteOperate = (state == self.Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockCtx.deviceID) : this.augustApi.unlock(lockCtx.deviceID);
   
-      var remoteOperate = this.augustApi.lock(lockCtx.deviceID);
       remoteOperate.then(function (result) {
         lockCtx.log("State was successfully set to " + status);
   
