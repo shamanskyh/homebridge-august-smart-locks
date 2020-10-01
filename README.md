@@ -73,6 +73,8 @@ or use the Homebridge Web Interface to setup the Plugin by searching for 'august
 
 ## Thanks
 
+Thanks to All current a future PR Contributors. Feel free to add your contributions to this list in your PR if you would like to.
+
 Special thanks to @ryanblock from [Repo](https://github.com/ryanblock/august-connect) for providing a simple way to communicate with the August API in NodeJS.
 
 Special thanks to @dejaloomer from [fork](https://github.com/dejaloomer/homebridge-augustlock) for providing the most recent fork update.

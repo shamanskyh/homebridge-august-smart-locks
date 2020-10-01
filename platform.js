@@ -138,10 +138,11 @@ class AugustPlatform {
         .on('get', this.getState.bind(this, accessory))
         .on('set', this.setState.bind(this, accessory));
   
-      accessory
-        .getService(this.Service.ContactSensor)
-        .getCharacteristic(this.Characteristic.ContactSensorState)
-        .on('get', this.getDoorState.bind(this, accessory));
+      var service = accessory.getService(this.Service.ContactSensor);
+      if (service) {
+        service.getCharacteristic(this.Characteristic.ContactSensorState)
+          .on('get', this.getDoorState.bind(this, accessory));
+      }
 
     //   accessory
     //     .getService(this.Service.BatteryService)
