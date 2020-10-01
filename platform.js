@@ -59,13 +59,12 @@ class AugustPlatform {
   
     
   
-    // Method to setup accesories from config.json
+    // Method to setup accessories from config.json
     didFinishLaunching() {
   
       if ((this.email || this.phone) && this.password) {
         // Add or update accessory in HomeKit
-        this.addAccessory();
-        this.periodicUpdate();
+        this.addAccessory(this.periodicUpdate.bind(this));
   
       } else {
         this.platformLog("Please setup August login information!")
@@ -75,7 +74,7 @@ class AugustPlatform {
     }
   
     // Method to add or update HomeKit accessories
-    addAccessory() {
+    addAccessory(callback) {
       var self = this;
   
       this.login(function (error) {
@@ -93,8 +92,9 @@ class AugustPlatform {
             }
   
           }
-  
+
         }
+        callback();
   
       });
     }
@@ -135,6 +135,11 @@ class AugustPlatform {
         .on('get', this.getState.bind(this, accessory))
         .on('set', this.setState.bind(this, accessory));
   
+      accessory
+        .getService(this.Service.ContactSensor)
+        .getCharacteristic(this.Characteristic.ContactSensorState)
+        .on('get', this.getDoorState.bind(this, accessory));
+
     //   accessory
     //     .getService(this.Service.BatteryService)
     //     .getCharacteristic(this.Characteristic.BatteryLevel);
@@ -198,11 +203,22 @@ class AugustPlatform {
       callback(null, accessory.context.currentState);
   
     }
-  
+
+    // Method to get target door state
+    getDoorState(accessory, callback) {
+      // Get target state directly from cache
+      callback(null, accessory.context.doorState);
+    }
+
     // Method for state periodic update
     periodicUpdate() {
       var self = this;
-  
+
+      if (self.tout !== null) {
+        this.log.debug("Update already scheduled")
+        return;
+      }
+
       // Determine polling interval
       if (this.count < this.maxCount) {
         this.count++;
@@ -210,11 +226,8 @@ class AugustPlatform {
   
       } else {
         var refresh = this.longPoll;
-  
+        
       }
-    //   if (self.tout !== null) {
-    //     return;
-    //   }
       // Setup periodic update with polling interval
       this.tout = setTimeout(function () {
         self.tout = null;
@@ -227,20 +240,17 @@ class AugustPlatform {
                 self.updatelockStates(accessory);
   
               }
+              self.periodicUpdate();
+
             }
-  
+
           } else {
             // Re-login after short polling interval if error occurs
             self.count = self.maxCount - 1;
-  
-          }
-  
-          // Setup next polling
-          if (!skipped) {
-            self.updating = false;
             self.periodicUpdate();
   
           }
+  
         });
   
       }, refresh * 1000);
@@ -257,6 +267,10 @@ class AugustPlatform {
         .getCharacteristic(this.Characteristic.LockTargetState)
         .getValue();
   
+      accessory
+        .getService(this.Service.ContactSensor)
+        .setCharacteristic(this.Characteristic.ContactSensorState, accessory.context.doorState);
+
     //   accessory
     //     .getService(this.Service.BatteryService)
     //     .setCharacteristic(this.Characteristic.BatteryLevel, accessory.context.batt);
@@ -280,8 +294,10 @@ class AugustPlatform {
       this.updating = true;
   
       if (this.validData) {
+        var self = this;
         // Refresh data directly from sever if current data is valid
         this.getlocks(false, function (error) {
+          self.updating = false;
           callback(error, false);
   
         });
@@ -289,7 +305,7 @@ class AugustPlatform {
       } else {
         // Re-login if current data is not valid
        // this.login(function (error) {
-          callback(new Error("couldn't contact August APi"), false);
+          callback(new Error("Couldn't contact August API"), false);
   
        // });
   
@@ -387,33 +403,30 @@ class AugustPlatform {
         var thisModel = locks.lockType.toString();
         var thislockName = lockName;
         var state = (lock.status == "kAugLockState_Locked") ? "locked" : (lock.status == "kAugLockState_Unlocked") ? "unlocked" : "error";
-        var nameFound = true;
-        var stateFound = true;
+        var doorState = (lock.doorState == 'kAugDoorState_Closed') ? "closed" : (lock.doorState == 'kAugDoorState_Open') ? "open": "unknown";
+        var isDoorOpened = doorState == "open" ? 1 : 0;
         var thishome = houseName;
         // battery no longer provided over api calls
         self.batt = 100;
   
-        var locked = state == "locked";
-        var unlocked = state == "unlocked";
+        var isStateChanged = false;
+
+        // if (self.batt < 20) {
+        //   var lowbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+        //   var newbatt = self.Characteristic.LockCurrentState.SECURED;
   
-        var thislockState = (state == "locked") ? "1" : "0";
+        // } else if (self.batt > 20) {
+        //   var lowbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+        //   var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
   
-        if (self.batt < 20) {
-          var lowbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
-          var newbatt = self.Characteristic.LockCurrentState.SECURED;
-  
-        } else if (self.batt > 20) {
-          var lowbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-          var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-  
-        }
+        // }
   
         // Initialization for opener
         if (!self.accessories[thisDeviceID]) {
           var uuid = self.UUIDGen.generate(thisDeviceID);
-            var _Accesory = self.Accessory;
+            var _Accessory = self.Accessory;
           // Setup accessory as GARAGE_lock_OPENER (4) category.
-          var newAccessory = new _Accesory("August " + thishome, uuid, 6);
+          var newAccessory = new _Accessory("August " + thislockName, uuid, 6);
   
           // New accessory found in the server is always reachable
           newAccessory.reachable = true;
@@ -427,20 +440,23 @@ class AugustPlatform {
           newAccessory.context.model = thisModel;
         // newAccessory.context.batt = self.batt;
           newAccessory.context.low = self.low;
+          newAccessory.context.doorState = isDoorOpened;
   
           newAccessory.context.log = function (msg) { self.log("[" + newAccessory.displayName + "]", msg); };
   
           // Setup HomeKit security systemLoc service
           newAccessory.addService(self.Service.LockMechanism, thislockName);
+          newAccessory.addService(self.Service.ContactSensor, thislockName);
           //newAccessory.addService(this.Service.BatteryService);
           // Setup HomeKit accessory information
           self.setAccessoryInfo(newAccessory);
           // Setup listeners for different security system events
           self.setService(newAccessory);
           // Register accessory in HomeKit
-          self.platformLog("adding lock lock to homebridge");
+          newAccessory.context.log("Adding lock lock to homebridge");
           self.api.registerPlatformAccessories("homebridge-august-smart-locks", "AugustLocks", [newAccessory]);
-  
+          isStateChanged = true;
+
         } else {
           // Retrieve accessory from cache
           var newAccessory = self.accessories[thisDeviceID];
@@ -474,13 +490,19 @@ class AugustPlatform {
   
           // Detect for state changes
           if (newState !== newAccessory.context.currentState) {
-            self.count = 0;
+            isStateChanged = true;
             newAccessory.context.currentState = newState;
   
           }
   
         }
+
+        if (isDoorOpened != newAccessory.context.doorState) {
+          isStateChanged = true;
+          newAccessory.context.doorState = isDoorOpened;
   
+        }
+
         // Store accessory in cache
         self.accessories[thisDeviceID] = newAccessory;
   
@@ -490,10 +512,8 @@ class AugustPlatform {
         // Did we have valid data?
         if (self.validData) {
           // Set short polling interval when state changes
-          if (self.tout && self.count == 0) {
-            clearTimeout(self.tout);
-            self.periodicUpdate();
-  
+          if (isStateChanged) {
+            self.count = 0;
           }
           callback();
   
@@ -516,19 +536,19 @@ class AugustPlatform {
       var self = this;
       var lockCtx = accessory.context;
       var status = this.lockState[state];
-      var augustState = (state == self.Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockCtx.deviceID) : this.augustApi.unlock(lockCtx.deviceID);
+      var remoteOperate = (state == self.Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockCtx.deviceID) : this.augustApi.unlock(lockCtx.deviceID);
   
-      var remoteOperate = this.augustApi.lock(lockCtx.deviceID);
       remoteOperate.then(function (result) {
         lockCtx.log("State was successfully set to " + status);
   
         // Set short polling interval
-        self.count = 0;
-        //if (self.tout) {
+        if (self.tout) {
           clearTimeout(self.tout);
-          self.periodicUpdate();
+          self.tout = null;
   
-        //}
+        }
+        self.count = 0;
+        self.periodicUpdate();
         callback(null, state);
   
       }, function (error) {
