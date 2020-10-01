@@ -1,5 +1,8 @@
 exports.AugustPlatform = void 0;
 
+const ModuleName = "homebridge-august-smart-locks"
+const PlatformName = "AugustLocks"
+
 const AugustApi = function(config) {
     process.env.AUGUST_API_KEY = config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4"; //pulled from android apk july 2020
     process.env.AUGUST_INSTALLID = config.installId;
@@ -24,7 +27,7 @@ class AugustPlatform {
       this.Characteristic = api.hap.Characteristic;
       this.UUIDGen = api.hap.uuid;
   
-      this.config = config || { "platform": "AugustLocks" };
+      this.config = config || { "platform": PlatformName };
       this.email = this.config.email;
       this.phone = this.config.phone;
       this.password = this.config.password;
@@ -105,7 +108,7 @@ class AugustPlatform {
       if (accessory) {
         var deviceID = accessory.context.deviceID;
         accessory.context.log("Removed from HomeBridge.");
-        this.api.unregisterPlatformAccessories("homebridge-AugustLock2", "AugustLock2", [accessory]);
+        this.api.unregisterPlatformAccessories(ModuleName, PlatformName, [accessory]);
         delete this.accessories[deviceID];
   
       }
@@ -174,6 +177,26 @@ class AugustPlatform {
           .setCharacteristic(this.Characteristic.Model, accessory.context.model);
   
       }
+  
+    }
+  
+    // Method to set target lock state
+    setState(accessory, state, callback) {
+      var self = this;
+  
+      // Always re-login for setting the state
+      this.getDevice(function (getlocksError) {
+        if (!getlocksError) {
+          self.setState(accessory, state, function (setStateError) {
+            callback(setStateError);
+          });
+  
+        } else {
+          callback(getlocksError);
+  
+        }
+  
+      }, accessory.context.deviceID);
   
     }
   
@@ -434,9 +457,8 @@ class AugustPlatform {
           self.setService(newAccessory);
           // Register accessory in HomeKit
           newAccessory.context.log("Adding lock lock to homebridge");
-          self.api.registerPlatformAccessories("homebridge-august-smart-locks", "AugustLocks", [newAccessory]);
+          self.api.registerPlatformAccessories(ModuleName, PlatformName, [newAccessory]);
           isStateChanged = true;
-
         } else {
           // Retrieve accessory from cache
           var newAccessory = self.accessories[thisDeviceID];
