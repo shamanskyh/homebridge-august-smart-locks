@@ -324,29 +324,48 @@ class AugustPlatform {
   
     }
   
-    // loging auth and get token
+    // login auth and get token
     login(callback) {
       var self = this;
-  
-      // Log in
-      var authenticate = this.augustApi.authorize();
-      authenticate.then(function (result) {
-        self.postLogin(callback);
-      }, function (error) {
-        var authenticate = this.augustApi.authorize({
-          code: this.code,
-        });
 
+      self.validateLogin().then(function () {
+        self.postLogin(callback);
+      }, function () {
+        if (!self.code) {
+          self.platformLog("requesting a 2FA code, please update settings with the code and restart");
+          self.augustApi.authorize().then(function () {
+            callback("successfully requested a 2FA code");
+          }, function (error) {
+            callback(`failed to request a 2FA code: ${error}`);
+          });
+          return;
+        }
+
+        // Log in with 2FA code
+        var authenticate = self.augustApi.authorize({
+          code: self.code,
+        });
         authenticate.then(function (result) {
           self.postLogin(callback);
         }, function (error) {
           self.platformLog(error);
-          callback(error, null);
+          self.platform("requesting a new 2FA code since the previous one did not work");
+          self.augustApi.authorize().then(function () {
+            callback(error, null);
+          }, function () {
+            callback(error, null);
+          });
   
         });
-  
       });
-  
+    }
+
+    validateLogin() {
+      // `locks` is being called because the `authorize` call without passing a `code` param
+      // is very inconsistent with its error behavior, however, `locks` should always return if
+      // authorization is successful
+      // the promise will be rejected if not logged in
+      return this.augustApi.locks();
     }
   
     postLogin(callback) {
