@@ -333,7 +333,10 @@ class AugustPlatform {
       authenticate.then(function (result) {
         self.postLogin(callback);
       }, function (error) {
-        var authenticate = this.augustApi.authorize(this.code);
+        var authenticate = this.augustApi.authorize({
+          code: this.code,
+        });
+
         authenticate.then(function (result) {
           self.postLogin(callback);
         }, function (error) {
@@ -391,7 +394,7 @@ class AugustPlatform {
       
       this.validData = false;
   
-      var getLock = self.augustApi.status(lockId);
+      var getLock = self.augustApi.status({lockID: lockId});
       getLock.then(function (lock) {
         var locks = lock.info //JSON.parse(JSON.stringify(lock));
   
@@ -539,7 +542,10 @@ class AugustPlatform {
       var self = this;
       var lockCtx = accessory.context;
       var status = this.lockState[state];
-      var remoteOperate = (state == self.Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockCtx.deviceID) : this.augustApi.unlock(lockCtx.deviceID);
+      const lockParams = {
+        lockID: lockCtx.deviceID,
+      };
+      var remoteOperate = (state == self.Characteristic.LockTargetState.SECURED) ? this.augustApi.lock(lockParams) : this.augustApi.unlock(lockParams);
   
       remoteOperate.then(function (result) {
         lockCtx.log("State was successfully set to " + status);

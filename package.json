@@ -20,7 +20,7 @@
     "homebridge": ">=0.4.9"
   },
   "dependencies": {
-    "august-connect": "^2.0.4",
+    "august-connect": "^3.0.0",
     "node-persist": "^0.0.8",
     "tough-cookie": "^2.3.1"
   }
