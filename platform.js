@@ -98,7 +98,7 @@ class AugustPlatform {
   
     // Method to remove accessories from HomeKit
     removeAccessory(accessory) {
-  
+      var self = this;
       if (accessory) {
         var deviceID = accessory.context.deviceID;
         accessory.context.log("Removed from HomeBridge.");
