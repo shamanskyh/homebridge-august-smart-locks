@@ -332,13 +332,18 @@ class AugustPlatform {
       authenticate.then(function (result) {
         self.postLogin(callback);
       }, function (error) {
-        var authenticate = self.augustApi.authorize(self.code);
+        var authenticate = self.augustApi.authorize({
+            code: self.code,
+            config: self.augustApiConfig
+        });
         authenticate.then(function (result) {
           self.postLogin(callback);
         }, function (error) {
           self.platformLog(error);
           self.platformLog("requesting a new 2FA code since the previous one did not work");
-          self.augustApi.authorize().then(function () {
+          self.augustApi.authorize({
+        config: self.augustApiConfig
+      }).then(function () {
             callback(error, null);
           }, function () {
             callback(error, null);
@@ -353,7 +358,9 @@ class AugustPlatform {
       // is very inconsistent with its error behavior, however, `locks` should always return if
       // authorization is successful
       // the promise will be rejected if not logged in
-      return this.augustApi.locks();
+      return this.augustApi.locks({
+        config: self.augustApiConfig
+      });
     }
   
     postLogin(callback) {
@@ -368,7 +375,9 @@ class AugustPlatform {
       if(start) {
         self.platformLog("getting locks ...");
       };
-      var getLocks = self.augustApi.locks();
+      var getLocks = self.augustApi.locks({
+        config: self.augustApiConfig
+      });
       getLocks.then(function (json) {
         self.lockids = Object.keys(json);
         for (var i = 0; i < self.lockids.length; i++) {
@@ -400,7 +409,8 @@ class AugustPlatform {
       
       self.validData = false;
   
-      var getLock = self.augustApi.status({lockID: lockId});
+      var getLock = self.augustApi.status({lockID: lockId,
+            config: self.augustApiConfig});
       getLock.then(function (lock) {
         var locks = lock.info //JSON.parse(JSON.stringify(lock));
   
@@ -548,7 +558,15 @@ class AugustPlatform {
       var self = this;
       var lockCtx = accessory.context;
       var status = self.lockState[state];
-      var remoteOperate = (state == self.Characteristic.LockTargetState.SECURED) ? self.augustApi.lock(lockCtx.deviceID) : self.augustApi.unlock(lockCtx.deviceID);
+      var remoteOperate = (state == self.Characteristic.LockTargetState.SECURED) 
+        ? self.augustApi.lock({
+            lockID: lockCtx.deviceID,
+            config: self.augustApiConfig
+        }) 
+        : self.augustApi.unlock({
+            lockID: lockCtx.deviceID,
+            config: self.augustApiConfig
+        });
   
       remoteOperate.then(function (result) {
         lockCtx.log("State was successfully set to " + status);
