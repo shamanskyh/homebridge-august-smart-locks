@@ -3,20 +3,6 @@ exports.AugustPlatform = void 0;
 const ModuleName = "homebridge-august-smart-locks"
 const PlatformName = "AugustLocks"
 
-const AugustApi = function(config) {
-    process.env.AUGUST_API_KEY = config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4"; //pulled from android apk july 2020
-    process.env.AUGUST_INSTALLID = config.installId;
-    process.env.AUGUST_PASSWORD = config.password;
-    if (config.email) {
-      process.env.AUGUST_ID_TYPE = 'email';
-      process.env.AUGUST_ID = config.email;
-    } else if (config.phone) {
-      process.env.AUGUST_ID_TYPE = 'phone';
-      process.env.AUGUST_ID = config.phone;
-    }
-    return require('august-connect');
-}
-
 class AugustPlatform {
     constructor(log, config, api) {
       this.log = log;
@@ -44,7 +30,17 @@ class AugustPlatform {
       this.validData = false;
       this.hideLocks = (this.config.hideLocks) ? this.config.hideLocks.split(",") : [];
   
-      this.augustApi = new AugustApi(this.config);
+      this.augustApiConfig = {
+        config: {
+          apiKey: config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4", //pulled from android apk july 2020,
+          installID: config.installId,
+          password: config.password,
+          IDType: config.email ? 'email' : 'phone',
+          augustID: config.email ? config.email : config.phone
+        }
+      }
+      
+      this.augustApi =  require('august-connect');
   
       this.manufacturer = "AUGUST";
       this.accessories = {};
@@ -327,12 +323,14 @@ class AugustPlatform {
   
     }
   
-    // loging auth and get token
+    // login auth and get token
     login(callback) {
       var self = this;
-  
+
       // Log in
-      var authenticate = self.augustApi.authorize();
+      var authenticate = self.augustApi.authorize({
+        config: self.augustApiConfig
+      });
       authenticate.then(function (result) {
         self.postLogin(callback);
       }, function (error) {
@@ -341,12 +339,23 @@ class AugustPlatform {
           self.postLogin(callback);
         }, function (error) {
           self.platformLog(error);
-          callback(error, null);
+          self.platform("requesting a new 2FA code since the previous one did not work");
+          self.augustApi.authorize().then(function () {
+            callback(error, null);
+          }, function () {
+            callback(error, null);
+          });
   
         });
-  
       });
-  
+    }
+
+    validateLogin() {
+      // `locks` is being called because the `authorize` call without passing a `code` param
+      // is very inconsistent with its error behavior, however, `locks` should always return if
+      // authorization is successful
+      // the promise will be rejected if not logged in
+      return this.augustApi.locks();
     }
   
     postLogin(callback) {
@@ -393,7 +402,7 @@ class AugustPlatform {
       
       self.validData = false;
   
-      var getLock = self.augustApi.status(lockId);
+      var getLock = self.augustApi.status({lockID: lockId});
       getLock.then(function (lock) {
         var locks = lock.info //JSON.parse(JSON.stringify(lock));
   
