@@ -337,7 +337,7 @@ class AugustPlatform {
           self.postLogin(callback);
         }, function (error) {
           self.platformLog(error);
-          self.platform("requesting a new 2FA code since the previous one did not work");
+          self.platformLog("requesting a new 2FA code since the previous one did not work");
           self.augustApi.authorize().then(function () {
             callback(error, null);
           }, function () {
