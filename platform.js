@@ -31,13 +31,11 @@ class AugustPlatform {
       this.hideLocks = (this.config.hideLocks) ? this.config.hideLocks.split(",") : [];
   
       this.augustApiConfig = {
-        config: {
           apiKey: config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4", //pulled from android apk july 2020,
           installID: config.installId,
           password: config.password,
           IDType: config.email ? 'email' : 'phone',
           augustID: config.email ? config.email : config.phone
-        }
       }
       
       this.augustApi =  require('august-connect');
