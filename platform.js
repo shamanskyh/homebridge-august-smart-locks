@@ -321,7 +321,7 @@ class AugustPlatform {
           }
         }
       }, function (error) {
-        self.platformLog(error);
+        self.platformLog("Could not communicate with August API: " + error.message);
         callback(error, null);
       });
     }
