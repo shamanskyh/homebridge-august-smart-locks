@@ -62,9 +62,9 @@ or use the Homebridge Web Interface to setup the Plugin by searching for 'august
 ## Usage
 
 * When you change the HomeKit switch to locked, the smart lock with lock the door.
-* When you change the HomeKit switch from locked to unlocked The smart lock will unlock the app.
-* When you use siri to unlock the door, it is likely siri will report a failure but the lock will unlock still.
-* When you use siri to lock the door, it will lock the door and siri will report the correct status.
+* When you change the HomeKit switch from locked to unlocked the smart lock will unlock the app.
+* When you use siri to unlock the door, it will unlcok the door and inform you of the status.
+* When you use siri to lock the door, it will lock the door and inform you of the status.
 
 ## Tested
 

@@ -460,9 +460,12 @@ class AugustPlatform {
         self.periodicUpdate();
         accessory.context.currentState = state;
         callback(null, state);
+        setImmediate(() => {
+          self.updatelockStates(accessory);
+        });
       }, function (error) {
         lockCtx.log("Error '" + error.message + "' setting lock state: " + status);
-        self.removeAccessory(accessory);
+        // self.removeAccessory(accessory);
         callback(error);
       });
     }
