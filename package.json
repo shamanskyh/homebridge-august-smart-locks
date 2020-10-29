@@ -1,6 +1,6 @@
 {
   "name": "homebridge-august-smart-locks",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "August Lock plugin for HomeBridge: https://github.com/nfarina/homebridge",
   "repository": {
     "type": "git",
