@@ -181,11 +181,12 @@ class AugustPlatform {
     }
 
     // Determine polling interval
+    var refresh;
     if (self.count < self.maxCount) {
       self.count++;
-      var refresh = self.shortPoll;
+      refresh = self.shortPoll;
     } else {
-      var refresh = self.longPoll;
+      refresh = self.longPoll;
     }
 
     // Setup periodic update with polling interval
@@ -367,13 +368,14 @@ class AugustPlatform {
         var isDoorOpened = doorState == "open" ? 1 : 0;
         var thishome = houseName;
         var isStateChanged = false;
+        var newAccessory;
 
         // Initialization for opener
         if (!self.accessories[thisDeviceID]) {
           var uuid = self.UUIDGen.generate(thisDeviceID);
           var _Accessory = self.Accessory;
           // Setup accessory as GARAGE_lock_OPENER (4) category.
-          var newAccessory = new _Accessory("August " + thislockName, uuid, 6);
+          newAccessory = new _Accessory("August " + thislockName, uuid, 6);
 
           // New accessory found in the server is always reachable
           newAccessory.reachable = true;
@@ -403,7 +405,7 @@ class AugustPlatform {
           isStateChanged = true;
         } else {
           // Retrieve accessory from cache
-          var newAccessory = self.accessories[thisDeviceID];
+          newAccessory = self.accessories[thisDeviceID];
 
           // Update context
           newAccessory.context.deviceID = thisDeviceID;
@@ -416,12 +418,13 @@ class AugustPlatform {
         }
 
         if (state) {
+          var newState;
           if (state === "locked") {
             newAccessory.context.initialState = self.Characteristic.LockCurrentState.UNSECURED;
-            var newState = self.Characteristic.LockCurrentState.SECURED;
+            newState = self.Characteristic.LockCurrentState.SECURED;
           } else if (state === "unlocked") {
             newAccessory.context.initialState = self.Characteristic.LockCurrentState.SECURED;
-            var newState = self.Characteristic.LockCurrentState.UNSECURED;
+            newState = self.Characteristic.LockCurrentState.UNSECURED;
           }
 
           // Detect for state changes
