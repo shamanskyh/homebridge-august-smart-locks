@@ -134,22 +134,18 @@ class AugustPlatform {
   setAccessoryInfo(accessory) {
     var self = this;
 
+    var informationService = accessory.getService(self.Service.AccessoryInformation);
+
     if (self.manufacturer) {
-      accessory
-        .getService(self.Service.AccessoryInformation)
-        .setCharacteristic(self.Characteristic.Manufacturer, self.manufacturer);
+      informationService.setCharacteristic(self.Characteristic.Manufacturer, self.manufacturer);
     }
 
     if (accessory.context.serialNumber) {
-      accessory
-        .getService(self.Service.AccessoryInformation)
-        .setCharacteristic(self.Characteristic.SerialNumber, accessory.context.serialNumber);
+      informationService.setCharacteristic(self.Characteristic.SerialNumber, accessory.context.serialNumber);
     }
 
     if (accessory.context.model) {
-      accessory
-        .getService(self.Service.AccessoryInformation)
-        .setCharacteristic(self.Characteristic.Model, accessory.context.model);
+      informationService.setCharacteristic(self.Characteristic.Model, accessory.context.model);
     }
   }
 
