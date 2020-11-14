@@ -211,15 +211,12 @@ class AugustPlatform {
   updatelockStates(accessory) {
     var self = this;
 
-    accessory
-      .getService(self.Service.LockMechanism)
-      .setCharacteristic(self.Characteristic.LockCurrentState, accessory.context.currentState);
+    var lockService = accessory.getService(self.Service.LockMechanism);
+    var doorService = accessory.getService(self.Service.ContactSensor);
 
-    accessory.getService(self.Service.LockMechanism).getCharacteristic(self.Characteristic.LockTargetState).getValue();
-
-    accessory
-      .getService(self.Service.ContactSensor)
-      .setCharacteristic(self.Characteristic.ContactSensorState, accessory.context.doorState);
+    lockService.getCharacteristic(self.Characteristic.LockTargetState).updateValue(accessory.context.targetState);
+    lockService.getCharacteristic(self.Characteristic.LockCurrentState).updateValue(accessory.context.currentState);
+    doorService.getCharacteristic(self.Characteristic.ContactSensorState).updateValue(accessory.context.doorState);
   }
 
   // Method to retrieve lock state from the server
@@ -427,6 +424,7 @@ class AugustPlatform {
           if (newState !== newAccessory.context.currentState) {
             isStateChanged = true;
             newAccessory.context.currentState = newState;
+            newAccessory.context.targetState = newState;
           }
         }
 
