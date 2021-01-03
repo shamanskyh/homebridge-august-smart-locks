@@ -1,5 +1,7 @@
 exports.AugustPlatform = void 0;
 
+const fs = require("fs");
+
 const ModuleName = "homebridge-august-smart-locks";
 const PlatformName = "AugustLocks";
 
@@ -30,6 +32,8 @@ class AugustPlatform {
     this.validData = false;
     this.codeRequested = false;
     this.hideLocks = this.config.hideLocks ? this.config.hideLocks.split(",") : [];
+    this.configPath = api.user.configPath();
+    this.authed = this.getConfig("authed");
 
     this.augustApiConfig = {
       apiKey: config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4", //pulled from android apk july 2020,
@@ -62,22 +66,36 @@ class AugustPlatform {
     }
   }
 
+  updateConfig(key, value) {
+    let configFile = fs.readFileSync(this.configPath);
+    let configuration = JSON.parse(configFile);
+    let AugustIndex = configuration.platforms.findIndex((element) => element.platform == "AugustLocks");
+    configuration.platforms[AugustIndex][key] = value;
+    fs.writeFileSync(this.configPath, JSON.stringify(configuration));
+  }
+
+  getConfig(key) {
+    let configFile = fs.readFileSync(this.configPath);
+    let configuration = JSON.parse(configFile);
+    let AugustIndex = configuration.platforms.findIndex((element) => element.platform == "AugustLocks");
+
+    return configuration.platforms[AugustIndex][key];
+  }
+
   // Method to add or update HomeKit accessories
   addAccessory(callback) {
     var self = this;
 
     self.login(function (error) {
       if (!error) {
+        self.updateConfig("authed", true);
         for (var deviceID in self.accessories) {
           var accessory = self.accessories[deviceID];
-          if (!accessory.reachable) {
-            // Remove extra accessories in cache
-            self.removeAccessory(accessory);
-          } else {
-            // Update inital state
-            self.updatelockStates(accessory);
-          }
+          // Update inital state
+          self.updatelockStates(accessory);
         }
+      } else {
+        self.updateConfig("authed", false);
       }
       callback(error);
     });
@@ -247,6 +265,11 @@ class AugustPlatform {
   // login auth and get token
   login(callback) {
     var self = this;
+
+    if (this.getConfig("authed")) {
+      return self.getlocks(true, callback);
+    }
+
     var authorizeRequest = {
       config: self.augustApiConfig,
     };
@@ -275,6 +298,7 @@ class AugustPlatform {
           );
           callback();
         } else {
+          self.platformLog(error.body);
           self.platformLog("Login was unsuccessful, check your configuration and try again.");
           callback(error);
         }
@@ -350,14 +374,14 @@ class AugustPlatform {
           lock.status == "kAugLockState_Locked"
             ? "locked"
             : lock.status == "kAugLockState_Unlocked"
-            ? "unlocked"
-            : "error";
+              ? "unlocked"
+              : "error";
         var doorState =
           lock.doorState == "kAugDoorState_Closed"
             ? "closed"
             : lock.doorState == "kAugDoorState_Open"
-            ? "open"
-            : "unknown";
+              ? "open"
+              : "unknown";
         var isDoorOpened = doorState == "open" ? 1 : 0;
         var thishome = houseName;
         var isStateChanged = false;
@@ -458,16 +482,16 @@ class AugustPlatform {
     var remoteOperate =
       state == self.Characteristic.LockTargetState.SECURED
         ? self.augustApi.lock({
-            lockID: lockCtx.deviceID,
-            config: self.augustApiConfig,
-          })
+          lockID: lockCtx.deviceID,
+          config: self.augustApiConfig,
+        })
         : self.augustApi.unlock({
-            lockID: lockCtx.deviceID,
-            config: self.augustApiConfig,
-          });
+          lockID: lockCtx.deviceID,
+          config: self.augustApiConfig,
+        });
 
     remoteOperate.then(
-      function (result) {
+      function () {
         lockCtx.log("State was successfully set to " + status);
 
         // Set short polling interval

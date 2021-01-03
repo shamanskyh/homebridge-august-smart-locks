@@ -21,7 +21,7 @@
   },
   "scripts": {
     "format": "prettier --write *.js",
-    "lint": "eslint *.js *.json",
+    "lint": "eslint --fix *.js *.json",
     "test": "echo \"Error: no test specified\" && exit"
   },
   "dependencies": {
