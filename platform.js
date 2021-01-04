@@ -32,8 +32,15 @@ class AugustPlatform {
     this.validData = false;
     this.codeRequested = false;
     this.hideLocks = this.config.hideLocks ? this.config.hideLocks.split(",") : [];
-    this.configPath = api.user.configPath();
-    this.authed = this.getConfig("authed");
+    
+    this.cacheDirectory = api.user.persistPath();
+    this.storage = require('node-persist');
+    this.storage.initSync({
+        dir: this.cacheDirectory,
+        forgiveParseErrors: true,
+    });
+    
+    this.authed = this.storage.getItemSync('authed') || false;
 
     this.augustApiConfig = {
       apiKey: config.securityToken || "7cab4bbd-2693-4fc1-b99b-dec0fb20f9d4", //pulled from android apk july 2020,
@@ -66,36 +73,20 @@ class AugustPlatform {
     }
   }
 
-  updateConfig(key, value) {
-    let configFile = fs.readFileSync(this.configPath);
-    let configuration = JSON.parse(configFile);
-    let AugustIndex = configuration.platforms.findIndex((element) => element.platform == "AugustLocks");
-    configuration.platforms[AugustIndex][key] = value;
-    fs.writeFileSync(this.configPath, JSON.stringify(configuration));
-  }
-
-  getConfig(key) {
-    let configFile = fs.readFileSync(this.configPath);
-    let configuration = JSON.parse(configFile);
-    let AugustIndex = configuration.platforms.findIndex((element) => element.platform == "AugustLocks");
-
-    return configuration.platforms[AugustIndex][key];
-  }
-
   // Method to add or update HomeKit accessories
   addAccessory(callback) {
     var self = this;
 
     self.login(function (error) {
       if (!error) {
-        self.updateConfig("authed", true);
+        self.storage.setItemSync('authed', true);
         for (var deviceID in self.accessories) {
           var accessory = self.accessories[deviceID];
           // Update inital state
           self.updatelockStates(accessory);
         }
       } else {
-        self.updateConfig("authed", false);
+        self.storage.setItemSync('authed', false);
       }
       callback(error);
     });
@@ -136,6 +127,18 @@ class AugustPlatform {
       .getCharacteristic(self.Characteristic.LockTargetState)
       .on("get", self.getTargetState.bind(self, accessory))
       .on("set", self.setState.bind(self, accessory));
+
+
+      var batteryService = accessory.getService(self.Service.BatteryService) 
+    if(batteryService) {
+        batteryService
+          .getCharacteristic(self.Characteristic.BatteryLevel);
+        batteryService
+          .getCharacteristic(self.Characteristic.StatusLowBattery);
+
+      } else {
+        accessory.addService(self.Service.BatteryService);
+      }
 
     var service = accessory.getService(self.Service.ContactSensor);
 
@@ -235,6 +238,16 @@ class AugustPlatform {
     lockService.getCharacteristic(self.Characteristic.LockTargetState).updateValue(accessory.context.targetState);
     lockService.getCharacteristic(self.Characteristic.LockCurrentState).updateValue(accessory.context.currentState);
     doorService.getCharacteristic(self.Characteristic.ContactSensorState).updateValue(accessory.context.doorState);
+  
+    var batteryService = accessory.getService(self.Service.BatteryService);
+
+    if(batteryService) {
+      batteryService
+        .setCharacteristic(self.Characteristic.BatteryLevel, accessory.context.batt);
+        
+      batteryService
+        .setCharacteristic(self.Characteristic.StatusLowBattery, accessory.context.low);
+    }  
   }
 
   // Method to retrieve lock state from the server
@@ -266,7 +279,7 @@ class AugustPlatform {
   login(callback) {
     var self = this;
 
-    if (this.getConfig("authed")) {
+    if (this.storage.getItemSync("authed")) {
       return self.getlocks(true, callback);
     }
 
@@ -275,8 +288,8 @@ class AugustPlatform {
     };
 
     var requestingCode = false;
-    if (self.code && self.code.length > 2) {
-      authorizeRequest.code = self.code;
+    if (self.code && self.code.toString().length == 6) {
+      authorizeRequest.code = self.code.toString();
     } else {
       if (self.codeRequested) {
         callback();
@@ -285,6 +298,7 @@ class AugustPlatform {
       requestingCode = true;
     }
 
+    self.platformLog(authorizeRequest);
     // Log in
     self.augustApi.authorize(authorizeRequest).then(
       function () {
@@ -313,7 +327,7 @@ class AugustPlatform {
     if (start) {
       self.platformLog("getting locks ...");
     }
-
+self.platformLog(self.augustApiConfig);
     self.augustApi
       .locks({
         config: self.augustApiConfig,
@@ -325,6 +339,10 @@ class AugustPlatform {
             self.lock = json[self.lockids[i]];
             self.lockname = self.lock["LockName"];
 
+            if(!self.lock || !self.lockname) {
+              continue;
+            }
+
             if (start) {
               self.platformLog(self.lock["HouseName"] + " " + self.lockname);
             }
@@ -335,7 +353,7 @@ class AugustPlatform {
               self.platformLog("LockId " + " " + self.lockId);
             }
 
-            if (!self.hideLocks.includes(self.lockId)) {
+            if (self.lockId && !self.hideLocks.includes(self.lockId)) {
               self.getDevice(callback, self.lockId, self.lockname, self.lock["HouseName"]);
             } else if (self.accessories[self.lockId]) {
               self.removeAccessory(self.accessories[self.lockId]);
@@ -357,9 +375,23 @@ class AugustPlatform {
       config: self.augustApiConfig,
     });
 
-    getLock.then(
-      function (lock) {
+    var getDetails = self.augustApi.details({
+      lockID: lockId,
+      config: self.augustApiConfig,
+    });
+
+    Promise.all([getLock, getDetails]).then(
+      function (values) {
+        var lock = values[0]
         var locks = lock.info;
+
+        self.platformLog(values[1].battery);
+
+        self.batt = values[1].battery * 100;
+        var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+        if (self.batt <= 20) {
+          newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+        }
 
         if (!locks.bridgeID) {
           self.validData = true;
@@ -408,10 +440,14 @@ class AugustPlatform {
           newAccessory.context.log = function (msg) {
             self.log("[" + newAccessory.displayName + "]", msg);
           };
+
+
+          newAccessory.context.batt = self.batt;
+          newAccessory.context.low = self.low;
           // Setup HomeKit security systemLoc service
           newAccessory.addService(self.Service.LockMechanism, thislockName);
           newAccessory.addService(self.Service.ContactSensor, thislockName);
-          //newAccessory.addService(this.Service.BatteryService);
+          newAccessory.addService(this.Service.BatteryService);
           // Setup HomeKit accessory information
           self.setAccessoryInfo(newAccessory);
           // Setup listeners for different security system events
@@ -433,6 +469,11 @@ class AugustPlatform {
           // Accessory is reachable after it's found in the server
           newAccessory.updateReachability(true);
         }
+
+
+    if (self.batt) {
+      newAccessory.context.low = (self.batt > 20) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+    }
 
         if (state) {
           var newState;
@@ -467,7 +508,7 @@ class AugustPlatform {
         callback();
       },
       function (error) {
-        //self.platformLog(error);
+        // self.platformLog(error);
         callback(error, null);
       },
     );
