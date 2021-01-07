@@ -327,7 +327,6 @@ class AugustPlatform {
     if (start) {
       self.platformLog("getting locks ...");
     }
-self.platformLog(self.augustApiConfig);
     self.augustApi
       .locks({
         config: self.augustApiConfig,
