@@ -384,8 +384,6 @@ class AugustPlatform {
         var lock = values[0]
         var locks = lock.info;
 
-        self.platformLog(values[1].battery);
-
         self.batt = values[1].battery * 100;
         var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
         if (self.batt > 0 && self.batt <= 20) {
