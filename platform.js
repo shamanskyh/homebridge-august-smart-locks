@@ -388,7 +388,7 @@ class AugustPlatform {
 
         self.batt = values[1].battery * 100;
         var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-        if (self.batt <= 20) {
+        if (self.batt > 0 && self.batt <= 20) {
           newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
         }
 
@@ -446,7 +446,7 @@ class AugustPlatform {
           // Setup HomeKit security systemLoc service
           newAccessory.addService(self.Service.LockMechanism, thislockName);
           newAccessory.addService(self.Service.ContactSensor, thislockName);
-          newAccessory.addService(this.Service.BatteryService);
+          newAccessory.addService(self.Service.BatteryService, thislockName);
           // Setup HomeKit accessory information
           self.setAccessoryInfo(newAccessory);
           // Setup listeners for different security system events
@@ -471,7 +471,7 @@ class AugustPlatform {
 
 
     if (self.batt) {
-      newAccessory.context.low = (self.batt > 20) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+      newAccessory.context.low = (self.batt > 20 || self.batt == 0) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
     }
 
         if (state) {
