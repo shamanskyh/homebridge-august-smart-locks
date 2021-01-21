@@ -471,7 +471,7 @@ class AugustPlatform {
 
 
     if (self.batt) {
-      newAccessory.context.low = (self.batt > 20 || self.batt == 0) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+      newAccessory.context.low = (self.batt > 20 || self.batt <= 0) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
     }
 
         if (state) {
