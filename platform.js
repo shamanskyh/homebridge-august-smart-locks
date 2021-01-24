@@ -129,16 +129,16 @@ class AugustPlatform {
       .on("set", self.setState.bind(self, accessory));
 
 
-    //   var batteryService = accessory.getService(self.Service.BatteryService) 
-    // if(batteryService) {
-    //     batteryService
-    //       .getCharacteristic(self.Characteristic.BatteryLevel);
-    //     batteryService
-    //       .getCharacteristic(self.Characteristic.StatusLowBattery);
+      var batteryService = accessory.getService(self.Service.BatteryService) 
+    if(batteryService) {
+        batteryService
+          .getCharacteristic(self.Characteristic.BatteryLevel);
+        batteryService
+          .getCharacteristic(self.Characteristic.StatusLowBattery);
 
-    //   } else {
-    //     accessory.addService(self.Service.BatteryService);
-    //   }
+      } else {
+        accessory.addService(self.Service.BatteryService);
+      }
 
     // var service = accessory.getService(self.Service.ContactSensor);
 
@@ -239,15 +239,15 @@ class AugustPlatform {
     lockService.getCharacteristic(self.Characteristic.LockCurrentState).updateValue(accessory.context.currentState);
     //doorService.getCharacteristic(self.Characteristic.ContactSensorState).updateValue(accessory.context.doorState);
   
-    // var batteryService = accessory.getService(self.Service.BatteryService);
-    //
-    // if(batteryService) {
-    //   batteryService
-    //     .setCharacteristic(self.Characteristic.BatteryLevel, accessory.context.batt);
+    var batteryService = accessory.getService(self.Service.BatteryService);
+
+    if(batteryService) {
+      batteryService
+        .setCharacteristic(self.Characteristic.BatteryLevel, accessory.context.batt);
         
-    //   batteryService
-    //     .setCharacteristic(self.Characteristic.StatusLowBattery, accessory.context.low);
-    // }  
+      batteryService
+        .setCharacteristic(self.Characteristic.StatusLowBattery, accessory.context.low);
+    }  
   }
 
   // Method to retrieve lock state from the server
@@ -384,11 +384,11 @@ class AugustPlatform {
         var lock = values[0]
         var locks = lock.info;
 
-        // self.batt = values[1].battery * 100;
-        // var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-        // if (self.batt > 0 && self.batt <= 20) {
-        //   newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
-        // }
+        self.batt = values[1].battery * 100;
+        var newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+        if (self.batt > 0 && self.batt <= 20) {
+          newbatt = self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+        }
 
         if (!locks.bridgeID) {
           self.validData = true;
@@ -439,12 +439,12 @@ class AugustPlatform {
           };
 
 
-          // newAccessory.context.batt = self.batt;
-          // newAccessory.context.low = self.low;
+          newAccessory.context.batt = self.batt;
+          newAccessory.context.low = self.low;
           // Setup HomeKit security systemLoc service
           newAccessory.addService(self.Service.LockMechanism, thislockName);
           //newAccessory.addService(self.Service.ContactSensor, thislockName);
-          //newAccessory.addService(self.Service.BatteryService, thislockName);
+          newAccessory.addService(self.Service.BatteryService, thislockName);
           // Setup HomeKit accessory information
           self.setAccessoryInfo(newAccessory);
           // Setup listeners for different security system events
@@ -468,9 +468,9 @@ class AugustPlatform {
         }
 
 
-    // if (self.batt) {
-    //   newAccessory.context.low = (self.batt > 20 || self.batt == 0) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
-    // }
+    if (self.batt) {
+      newAccessory.context.low = (self.batt > 20 || self.batt <= 0) ? self.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL : self.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+    }
 
         if (state) {
           var newState;
